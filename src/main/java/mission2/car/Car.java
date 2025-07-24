@@ -1,36 +1,33 @@
 package mission2.car;
 
-import mission2.car.components.Brake;
-import mission2.car.components.CarType;
-import mission2.car.components.Engine;
-import mission2.car.components.Steering;
+import mission2.car.components.IComponent;
 
-class Car implements ICar {
-    private CarType carType;
-    private Engine engine;
-    private Brake brake;
-    private Steering steering;
+public class Car implements ICar {
+    private IComponent carType;
+    private IComponent engine;
+    private IComponent brake;
+    private IComponent steering;
 
-    protected Car(CarType carType, Engine engine, Brake brake, Steering steering) {
+    protected Car(IComponent carType, IComponent engine, IComponent brake, IComponent steering) {
         this.carType = carType;
         this.engine = engine;
         this.brake = brake;
         this.steering = steering;
     }
 
-    public CarType getCarType() {
+    public IComponent getCarType() {
         return carType;
     }
 
-    public Engine getEngine() {
+    public IComponent getEngine() {
         return engine;
     }
 
-    public Brake getBrake() {
+    public IComponent getBrake() {
         return brake;
     }
 
-    public Steering getSteering() {
+    public IComponent getSteering() {
         return steering;
     }
 }

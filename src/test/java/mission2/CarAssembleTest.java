@@ -118,6 +118,7 @@ class CarAssembleTest {
         carAssembleProcess.doMakingStepBySelected(BRAKE_SYSTEM_IDX, BOSCH_B);
         carAssembleProcess.doMakingStepBySelected(STEERING_SYSTEM_IDX, BOSCH_S);
         assertTrue(carAssembleProcess.isCombinationValidCheck());
+        assertEquals(RUN_TEST_IDX, carAssembleProcess.doMakingStepBySelected(RUN_TEST_IDX, RUN_PRODUCE_CAR));
     }
 
     @Test
@@ -127,6 +128,7 @@ class CarAssembleTest {
         carAssembleProcess.doMakingStepBySelected(BRAKE_SYSTEM_IDX, BOSCH_B);
         carAssembleProcess.doMakingStepBySelected(STEERING_SYSTEM_IDX, MOBIS);
         assertFalse(carAssembleProcess.isCombinationValidCheck());
+        assertEquals(RUN_TEST_IDX, carAssembleProcess.doMakingStepBySelected(RUN_TEST_IDX, RUN_PRODUCE_CAR));
     }
 
 
@@ -137,6 +139,7 @@ class CarAssembleTest {
         carAssembleProcess.doMakingStepBySelected(BRAKE_SYSTEM_IDX, CONTINENTAL);
         carAssembleProcess.doMakingStepBySelected(STEERING_SYSTEM_IDX, MOBIS);
         assertFalse(carAssembleProcess.isCombinationValidCheck());
+        assertEquals(RUN_TEST_IDX, carAssembleProcess.doMakingStepBySelected(RUN_TEST_IDX, RUN_PRODUCE_CAR));
     }
 
     @Test
@@ -146,6 +149,7 @@ class CarAssembleTest {
         carAssembleProcess.doMakingStepBySelected(BRAKE_SYSTEM_IDX, MANDO);
         carAssembleProcess.doMakingStepBySelected(STEERING_SYSTEM_IDX, MOBIS);
         assertFalse(carAssembleProcess.isCombinationValidCheck());
+        assertEquals(RUN_TEST_IDX, carAssembleProcess.doMakingStepBySelected(RUN_TEST_IDX, RUN_PRODUCE_CAR));
     }
 
     @Test
@@ -155,6 +159,8 @@ class CarAssembleTest {
         carAssembleProcess.doMakingStepBySelected(BRAKE_SYSTEM_IDX, CONTINENTAL);
         carAssembleProcess.doMakingStepBySelected(STEERING_SYSTEM_IDX, MOBIS);
         assertFalse(carAssembleProcess.isCombinationValidCheck());
+
+        assertEquals(RUN_TEST_IDX, carAssembleProcess.doMakingStepBySelected(RUN_TEST_IDX, RUN_PRODUCE_CAR));
     }
 
     @Test
@@ -164,5 +170,17 @@ class CarAssembleTest {
         carAssembleProcess.doMakingStepBySelected(BRAKE_SYSTEM_IDX, MANDO);
         carAssembleProcess.doMakingStepBySelected(STEERING_SYSTEM_IDX, MOBIS);
         assertFalse(carAssembleProcess.isCombinationValidCheck());
+        assertEquals(RUN_TEST_IDX, carAssembleProcess.doMakingStepBySelected(RUN_TEST_IDX, RUN_PRODUCE_CAR));
+    }
+
+
+    @Test
+    void FAIL_BROKEN_ENGINE_포함() {
+        carAssembleProcess.doMakingStepBySelected(CAR_TYPE_IDX, SEDAN);
+        carAssembleProcess.doMakingStepBySelected(ENGINE_IDX, BROKEN_ENGINE);
+        carAssembleProcess.doMakingStepBySelected(BRAKE_SYSTEM_IDX, BOSCH_B);
+        carAssembleProcess.doMakingStepBySelected(STEERING_SYSTEM_IDX, BOSCH_S);
+        assertTrue(carAssembleProcess.isCombinationValidCheck());
+        assertEquals(RUN_TEST_IDX, carAssembleProcess.doMakingStepBySelected(RUN_TEST_IDX, RUN_PRODUCE_CAR));
     }
 }

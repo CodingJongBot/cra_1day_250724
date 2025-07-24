@@ -1,16 +1,17 @@
 package mission2;
 
+import mission2.car.Car;
 import mission2.car.CarBuilder;
 import mission2.car.componentFactory.BrakeFactory;
 import mission2.car.componentFactory.CarTypeFactory;
 import mission2.car.componentFactory.EngineFactory;
 import mission2.car.componentFactory.SteeringFactory;
-import mission2.car.components.IComponent;
 
 import java.util.List;
 import java.util.Scanner;
 
 public class CarAssembleProcess {
+    public static final int RUN_TEST_ITEM_NUM = 2;
     private final String CLEAR_SCREEN = "\033[H\033[2J";
 
     private final int CAR_TYPE_IDX = 0;
@@ -23,17 +24,18 @@ public class CarAssembleProcess {
     private final int GM = 1, TOYOTA = 2, WIA = 3;
     private final int MANDO = 1, CONTINENTAL = 2, BOSCH_B = 3;
     private final int BOSCH_S = 1, MOBIS = 2;
+
     public final int RUN_PRODUCE_CAR = 1;
     public final int TEST_PRODUCE_CAR = 2;
     public final int BROKEN_ENGINE = 4;
     public final int UNDO_OR_RESET = 0;
 
-    private IComponent[] carComponentList = new IComponent[5];
-    private final CarBuilder carBuilder = new CarBuilder();
     private final CarTypeFactory carTypeFactory = new CarTypeFactory();
     private final EngineFactory engineFactory = new EngineFactory();
     private final BrakeFactory brakeFactory = new BrakeFactory();
     private final SteeringFactory steeringFactory = new SteeringFactory();
+    private final CarBuilder carBuilder = new CarBuilder();
+    private Car producedCar;
 
 
     public void run() {
@@ -48,7 +50,6 @@ public class CarAssembleProcess {
 
             Integer selectMenuNumber = parseSelectMenuNumber(inputMenuItem);
             if (selectMenuNumber == null) continue;
-
             if (!isValidMenuItem(makingStep, selectMenuNumber)) continue;
 
             makingStep = doMakingStepBySelected(makingStep, selectMenuNumber);
@@ -179,27 +180,27 @@ public class CarAssembleProcess {
                 break;
             case ENGINE_IDX:
                 validRange = engineFactory.getAvailableList().size();
-                if (selected < 0 || selected > validRange) {
+                if (selected < UNDO_OR_RESET || selected > validRange) {
                     System.out.println("ERROR :: 엔진은 1 ~ " + validRange + " 범위만 선택 가능");
                     return false;
                 }
                 break;
             case BRAKE_SYSTEM_IDX:
                 validRange = brakeFactory.getAvailableList().size();
-                if (selected < 0 || selected > validRange) {
+                if (selected < UNDO_OR_RESET || selected > validRange) {
                     System.out.println("ERROR :: 제동장치는 1 ~ " + validRange + " 범위만 선택 가능");
                     return false;
                 }
                 break;
             case STEERING_SYSTEM_IDX:
                 validRange = steeringFactory.getAvailableList().size();
-                if (selected < 0 || selected > validRange) {
+                if (selected < UNDO_OR_RESET || selected > validRange) {
                     System.out.println("ERROR :: 조향장치는 1 ~ " + validRange + " 범위만 선택 가능");
                     return false;
                 }
                 break;
             case RUN_TEST_IDX:
-                if (selected < 0 || selected > 2) {
+                if (selected < UNDO_OR_RESET || selected > RUN_TEST_ITEM_NUM) {
                     System.out.println("ERROR :: Run 또는 Test 중 하나를 선택 필요");
                     return false;
                 }
@@ -221,9 +222,12 @@ public class CarAssembleProcess {
     }
 
     public int selectRunTest(int makingStep, Integer selectMenuNumber) {
-        if (selectMenuNumber == UNDO_OR_RESET) makingStep = CAR_TYPE_IDX;
-            //build
-        else if (selectMenuNumber == RUN_PRODUCE_CAR) runProducedCar();
+        if (selectMenuNumber == UNDO_OR_RESET) {
+            makingStep = CAR_TYPE_IDX;
+            return makingStep;
+        }
+        producedCar = carBuilder.build();
+        if (selectMenuNumber == RUN_PRODUCE_CAR) runProducedCar();
         else if (selectMenuNumber == TEST_PRODUCE_CAR) testProducedCar();
         delayRunTest(2000);
         return makingStep;
@@ -243,34 +247,34 @@ public class CarAssembleProcess {
     }
 
     private boolean isBrokenEngine() {
-        return carComponentList[ENGINE_IDX].getNameIdx() == BROKEN_ENGINE;
+        return producedCar.getEngine().getNameIdx() + 1 == BROKEN_ENGINE;
     }
 
     private void printCarComponents() {
-        System.out.printf("Car Type : %s\n", carTypeFactory.getAvailableList().get(carComponentList[CAR_TYPE_IDX].getNameIdx()));
-        System.out.printf("Engine   : %s\n", engineFactory.getAvailableList().get(carComponentList[ENGINE_IDX].getNameIdx()));
-        System.out.printf("Brake    : %s\n", brakeFactory.getAvailableList().get(carComponentList[BRAKE_SYSTEM_IDX].getNameIdx()));
-        System.out.printf("Steering : %s\n", steeringFactory.getAvailableList().get(carComponentList[STEERING_SYSTEM_IDX].getNameIdx()));
+        System.out.printf("Car Type : %s\n", carTypeFactory.getAvailableList().get(producedCar.getCarType().getNameIdx()));
+        System.out.printf("Engine   : %s\n", engineFactory.getAvailableList().get(producedCar.getEngine().getNameIdx()));
+        System.out.printf("Brake    : %s\n", brakeFactory.getAvailableList().get(producedCar.getBrake().getNameIdx()));
+        System.out.printf("Steering : %s\n", steeringFactory.getAvailableList().get(producedCar.getSteering().getNameIdx()));
         System.out.println("자동차가 동작됩니다.");
     }
 
     private void testProducedCar() {
-        int carTypeNum = carComponentList[CAR_TYPE_IDX].getNameIdx() + 1;
-        int engineNum = carComponentList[ENGINE_IDX].getNameIdx() + 1;
-        int brakeNum = carComponentList[BRAKE_SYSTEM_IDX].getNameIdx() + 1;
-        int steeringNum = carComponentList[STEERING_SYSTEM_IDX].getNameIdx() + 1;
+        int consoleCarTypeNum = producedCar.getCarType().getNameIdx() + 1;
+        int consoleEngineNum = producedCar.getEngine().getNameIdx() + 1;
+        int consoleBrakeNum = producedCar.getBrake().getNameIdx() + 1;
+        int consoleSteeringNum = producedCar.getSteering().getNameIdx() + 1;
 
         System.out.println("Test...");
         delayRunTest(1500);
-        if (carTypeNum == SEDAN && brakeNum == CONTINENTAL) {
+        if (consoleCarTypeNum == SEDAN && consoleBrakeNum == CONTINENTAL) {
             failRunTest("Sedan에는 Continental제동장치 사용 불가");
-        } else if (carTypeNum == SUV && engineNum == TOYOTA) {
+        } else if (consoleCarTypeNum == SUV && consoleEngineNum == TOYOTA) {
             failRunTest("SUV에는 TOYOTA엔진 사용 불가");
-        } else if (carTypeNum == TRUCK && engineNum == WIA) {
+        } else if (consoleCarTypeNum == TRUCK && consoleEngineNum == WIA) {
             failRunTest("Truck에는 WIA엔진 사용 불가");
-        } else if (carTypeNum == TRUCK && brakeNum == MANDO) {
+        } else if (consoleCarTypeNum == TRUCK && consoleBrakeNum == MANDO) {
             failRunTest("Truck에는 Mando제동장치 사용 불가");
-        } else if (brakeNum == BOSCH_B && steeringNum != BOSCH_S) {
+        } else if (consoleBrakeNum == BOSCH_B && consoleSteeringNum != BOSCH_S) {
             failRunTest("Bosch제동장치에는 Bosch조향장치 이외 사용 불가");
         } else {
             System.out.println("자동차 부품 조합 테스트 결과 : PASS");
@@ -278,41 +282,42 @@ public class CarAssembleProcess {
     }
 
     public boolean isCombinationValidCheck() {
-        int carTypeNum = carComponentList[CAR_TYPE_IDX].getNameIdx() + 1;
-        int engineNum = carComponentList[ENGINE_IDX].getNameIdx() + 1;
-        int brakeNum = carComponentList[BRAKE_SYSTEM_IDX].getNameIdx() + 1;
-        int steeringNum = carComponentList[STEERING_SYSTEM_IDX].getNameIdx() + 1;
+        if (producedCar == null) producedCar = carBuilder.build();
 
-        if (carTypeNum == SEDAN && brakeNum == CONTINENTAL) return false;
-        if (carTypeNum == SUV && engineNum == TOYOTA) return false;
-        if (carTypeNum == TRUCK && engineNum == WIA) return false;
-        if (carTypeNum == TRUCK && brakeNum == MANDO) return false;
-        if (brakeNum == BOSCH_B && steeringNum != BOSCH_S) return false;
+        int consoleCarTypeNum = producedCar.getCarType().getNameIdx() + 1;
+        int consoleEngineNum = producedCar.getEngine().getNameIdx() + 1;
+        int consoleBrakeNum = producedCar.getBrake().getNameIdx() + 1;
+        int consoleSteeringNum = producedCar.getSteering().getNameIdx() + 1;
+
+        if (consoleCarTypeNum == SEDAN && consoleBrakeNum == CONTINENTAL) return false;
+        if (consoleCarTypeNum == SUV && consoleEngineNum == TOYOTA) return false;
+        if (consoleCarTypeNum == TRUCK && consoleEngineNum == WIA) return false;
+        if (consoleCarTypeNum == TRUCK && consoleBrakeNum == MANDO) return false;
+        if (consoleBrakeNum == BOSCH_B && consoleSteeringNum != BOSCH_S) return false;
         return true;
     }
 
     private void selectCarType(int carTypeNum) {
         int carTypeIdx = carTypeNum - 1;
-        carComponentList[CAR_TYPE_IDX] = carTypeFactory.getComponent(carTypeIdx);
+        carBuilder.carType(carTypeFactory.getComponent(carTypeIdx));
         System.out.printf("차량 타입으로 %s을 선택하셨습니다.\n", carTypeFactory.getAvailableList().get(carTypeIdx));
     }
 
-
     private void selectEngine(int engineNum) {
         int engineIdx = engineNum - 1;
-        carComponentList[ENGINE_IDX] = engineFactory.getComponent(engineIdx);
+        carBuilder.engine(engineFactory.getComponent(engineIdx));
         System.out.printf("%s 엔진을 선택하셨습니다.\n", engineFactory.getAvailableList().get(engineIdx));
     }
 
     private void selectBrakeSystem(int brakeNum) {
         int brakeIdx = brakeNum - 1;
-        carComponentList[BRAKE_SYSTEM_IDX] = brakeFactory.getComponent(brakeIdx);
+        carBuilder.brake(brakeFactory.getComponent(brakeIdx));
         System.out.printf("%s 제동장치를 선택하셨습니다.\n", brakeFactory.getAvailableList().get(brakeIdx));
     }
 
     private void selectSteeringSystem(int steeringNum) {
         int steeringIdx = steeringNum - 1;
-        carComponentList[STEERING_SYSTEM_IDX] = steeringFactory.getComponent(steeringIdx);
+        carBuilder.steering(steeringFactory.getComponent(steeringIdx));
         System.out.printf("%s 조향장치를 선택하셨습니다.\n", steeringFactory.getAvailableList().get(steeringIdx));
     }
 
@@ -320,12 +325,10 @@ public class CarAssembleProcess {
         return currentStep + 1;
     }
 
-
     private void failRunTest(String msg) {
         System.out.println("자동차 부품 조합 테스트 결과 : FAIL");
         System.out.println(msg);
     }
-
 
     private void delayRunTest(int ms) {
         try {

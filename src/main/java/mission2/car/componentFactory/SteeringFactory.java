@@ -6,7 +6,7 @@ import mission2.car.components.Steering;
 import java.util.List;
 
 public class SteeringFactory implements IComponentFactory {
-    private static final int BOSCH_S = 1, MOBIS = 2;
+    private static final int BOSCH = 1, MOBIS = 2;
     private List<String> steeringList = List.of("BOSCH", "MOBIS");
 
     @Override

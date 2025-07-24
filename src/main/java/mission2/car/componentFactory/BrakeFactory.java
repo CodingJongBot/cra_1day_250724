@@ -6,8 +6,7 @@ import mission2.car.components.IComponent;
 import java.util.List;
 
 public class BrakeFactory implements IComponentFactory {
-    private final int MANDO = 1, CONTINENTAL = 2, BOSCH_B = 3;
-
+    private final int MANDO = 1, CONTINENTAL = 2, BOSCH = 3;
     private List<String> brakeList = List.of("MANDO", "CONTINENTAL", "BOSCH");
 
     @Override
