@@ -1,4 +1,4 @@
-package mission1;
+package mission2;
 
 import java.util.Scanner;
 
@@ -27,12 +27,12 @@ public class Assemble {
         int makingStep = CAR_TYPE_IDX;
         while (true) {
             clearConsole();
-            showMenuItemEachMakingStep(makingStep);
+            showMenuEachMakingStep(makingStep);
 
-            String inputMenuItem = sc.nextLine().trim();
-            if (isCmdExit(inputMenuItem)) break;
+            String inputCmd = sc.nextLine().trim();
+            if (isCmdExit(inputCmd)) break;
 
-            Integer selectMenuNumber = parseSelectMenuNumber(inputMenuItem);
+            Integer selectMenuNumber = parseSelectMenuNumber(inputCmd);
             if (selectMenuNumber == null) continue;
 
             if (isValidMenuItem(makingStep, selectMenuNumber)) continue;
@@ -47,7 +47,7 @@ public class Assemble {
         System.out.flush();
     }
 
-    private static void showMenuItemEachMakingStep(int makingStep) {
+    private static void showMenuEachMakingStep(int makingStep) {
         switch (makingStep) {
             case CAR_TYPE_IDX:
                 showCarTypeMenuItem();
@@ -134,7 +134,7 @@ public class Assemble {
             selectMenuNumber = Integer.parseInt(buf);
         } catch (NumberFormatException e) {
             System.out.println("ERROR :: 숫자만 입력 가능");
-            delayRunTest(800);
+            delay(800);
             return null;
         }
         return selectMenuNumber;
@@ -142,14 +142,16 @@ public class Assemble {
 
     private static boolean isValidMenuItem(int makingStep, int selectMenuNumber) {
         if (!isValidRange(makingStep, selectMenuNumber)) {
-            delayRunTest(800);
+            delay(800);
             return true;
         }
         return false;
     }
 
-    private static boolean isValidRange(int makingStep, int selected) {
-        switch (makingStep) {
+
+    //Range에 대한 Refactoring
+    private static boolean isValidRange(int step, int selected) {
+        switch (step) {
             case CAR_TYPE_IDX:
                 if (selected < 1 || selected > 3) {
                     System.out.println("ERROR :: 차량 타입은 1 ~ 3 범위만 선택 가능");
@@ -185,14 +187,16 @@ public class Assemble {
     }
 
 
+    //Making Step에 따른 menu item선택
     private static int doMakingStepBySelected(int makingStep, Integer selectMenuNumber) {
         if (makingStep == RUN_TEST_IDX) return selectRunTest(makingStep, selectMenuNumber);
+
         if (makingStep > CAR_TYPE_IDX && selectMenuNumber == UNDO_OR_RESET) return makingStep - 1;
         else if (makingStep == CAR_TYPE_IDX) selectCarType(selectMenuNumber);
         else if (makingStep == ENGINE_IDX) selectEngine(selectMenuNumber);
         else if (makingStep == BRAKE_SYSTEM_IDX) selectBrakeSystem(selectMenuNumber);
         else if (makingStep == STEERING_SYSTEM_IDX) selectSteeringSystem(selectMenuNumber);
-        delayRunTest(800);
+        delay(800);
         return nextMakingStep(makingStep);
     }
 
@@ -200,25 +204,38 @@ public class Assemble {
         if (selectMenuNumber == UNDO_OR_RESET) makingStep = CAR_TYPE_IDX;
         else if (selectMenuNumber == RUN_PRODUCE_CAR) runProducedCar();
         else if (selectMenuNumber == TEST_PRODUCE_CAR) testProducedCar();
-        delayRunTest(2000);
+        delay(2000);
         return makingStep;
     }
 
+    /*
+        3) 완성된 차량을 테스트한다.
+        선택한부품이 자동차타입에사용가능한지검사
+
+        제한조건1
+        순서3) 자동차 완성가능조합확인
+        • 제동장치에Bosch 제품을 사용했다면, 조향장치도Bosch 제품을 사용해야한다.
+        (타사 제품과호환되지않는다.)
+
+        제한조건2
+        • Continental은 Sedan용 제동장치를 만들지 않는다.
+        (-> 세단에 Continental 제품 사용 불가)
+
+        • 도요타는 SUV용 엔진을만들지않는다.
+        • WIA는 Truck용 엔진을 만들지 않는다.
+        • Mando는 Truck용 제동장치(brake System)을 만들지 않는다.
+    */
     private static void runProducedCar() {
-        if (!isCombinationValidCheck()) {
+        if (!isValidCheck()) {
             System.out.println("자동차가 동작되지 않습니다");
             return;
         }
-        if (isBrokenEngine()) {
+        if (carComponentList[ENGINE_IDX] == BROKEN_ENGINE) {
             System.out.println("엔진이 고장나있습니다.");
             System.out.println("자동차가 움직이지 않습니다.");
             return;
         }
         printCarComponents();
-    }
-
-    private static boolean isBrokenEngine() {
-        return carComponentList[ENGINE_IDX] == BROKEN_ENGINE;
     }
 
     private static void printCarComponents() {
@@ -233,23 +250,23 @@ public class Assemble {
 
     private static void testProducedCar() {
         System.out.println("Test...");
-        delayRunTest(1500);
+        delay(1500);
         if (carComponentList[CAR_TYPE_IDX] == SEDAN && carComponentList[BRAKE_SYSTEM_IDX] == CONTINENTAL) {
-            failRunTest("Sedan에는 Continental제동장치 사용 불가");
+            fail("Sedan에는 Continental제동장치 사용 불가");
         } else if (carComponentList[CAR_TYPE_IDX] == SUV && carComponentList[ENGINE_IDX] == TOYOTA) {
-            failRunTest("SUV에는 TOYOTA엔진 사용 불가");
+            fail("SUV에는 TOYOTA엔진 사용 불가");
         } else if (carComponentList[CAR_TYPE_IDX] == TRUCK && carComponentList[ENGINE_IDX] == WIA) {
-            failRunTest("Truck에는 WIA엔진 사용 불가");
+            fail("Truck에는 WIA엔진 사용 불가");
         } else if (carComponentList[CAR_TYPE_IDX] == TRUCK && carComponentList[BRAKE_SYSTEM_IDX] == MANDO) {
-            failRunTest("Truck에는 Mando제동장치 사용 불가");
+            fail("Truck에는 Mando제동장치 사용 불가");
         } else if (carComponentList[BRAKE_SYSTEM_IDX] == BOSCH_B && carComponentList[STEERING_SYSTEM_IDX] != BOSCH_S) {
-            failRunTest("Bosch제동장치에는 Bosch조향장치 이외 사용 불가");
+            fail("Bosch제동장치에는 Bosch조향장치 이외 사용 불가");
         } else {
             System.out.println("자동차 부품 조합 테스트 결과 : PASS");
         }
     }
 
-    private static boolean isCombinationValidCheck() {
+    private static boolean isValidCheck() {
         if (carComponentList[CAR_TYPE_IDX] == SEDAN && carComponentList[BRAKE_SYSTEM_IDX] == CONTINENTAL) return false;
         if (carComponentList[CAR_TYPE_IDX] == SUV && carComponentList[ENGINE_IDX] == TOYOTA) return false;
         if (carComponentList[CAR_TYPE_IDX] == TRUCK && carComponentList[ENGINE_IDX] == WIA) return false;
@@ -258,13 +275,21 @@ public class Assemble {
             return false;
         return true;
     }
+    //TODO
 
+    /*
+        1) 자동차 타입을 선택한다.
+        세단, SUV(에스-유-브이), 트럭 총 세가지타입을제작할수있으며, ★향후에타입이더추가될수있다.
+    */
     private static void selectCarType(int carTypeNum) {
         carComponentList[CAR_TYPE_IDX] = carTypeNum;
         System.out.printf("차량 타입으로 %s을 선택하셨습니다.\n", carTypeNum == 1 ? "Sedan" : carTypeNum == 2 ? "SUV" : "Truck");
     }
 
-
+    /*
+    2) 자동차에 들어갈 부품을선택한다.
+        엔진, 제동장치, 조향장치를 각각 선택한다
+    */
     private static void selectEngine(int engineNum) {
         carComponentList[ENGINE_IDX] = engineNum;
         String manufacture = engineNum == 1 ? "GM" : engineNum == 2 ? "TOYOTA" : engineNum == 3 ? "WIA" : "고장난 엔진";
@@ -288,13 +313,13 @@ public class Assemble {
     }
 
 
-    private static void failRunTest(String msg) {
+    private static void fail(String msg) {
         System.out.println("자동차 부품 조합 테스트 결과 : FAIL");
         System.out.println(msg);
     }
 
 
-    private static void delayRunTest(int ms) {
+    private static void delay(int ms) {
         try {
             Thread.sleep(ms);
         } catch (InterruptedException ignored) {
