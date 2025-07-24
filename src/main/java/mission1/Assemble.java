@@ -35,7 +35,7 @@ public class Assemble {
             Integer selectMenuNumber = parseSelectMenuNumber(inputMenuItem);
             if (selectMenuNumber == null) continue;
 
-            if (isValidMenuItem(makingStep, selectMenuNumber)) continue;
+            if (!isValidMenuItem(makingStep, selectMenuNumber)) continue;
 
             makingStep = doMakingStepBySelected(makingStep, selectMenuNumber);
         }
@@ -120,18 +120,19 @@ public class Assemble {
         System.out.println("===============================");
     }
 
-    private static boolean isCmdExit(String buf) {
-        if (buf.equalsIgnoreCase("exit")) {
+    private static boolean isCmdExit(String inputMenuItem) {
+        if (inputMenuItem.equalsIgnoreCase("exit")) {
             System.out.println("바이바이");
             return true;
         }
         return false;
+
     }
 
-    private static Integer parseSelectMenuNumber(String buf) {
+    private static Integer parseSelectMenuNumber(String inputMenuItem) {
         int selectMenuNumber;
         try {
-            selectMenuNumber = Integer.parseInt(buf);
+            selectMenuNumber = Integer.parseInt(inputMenuItem);
         } catch (NumberFormatException e) {
             System.out.println("ERROR :: 숫자만 입력 가능");
             delayRunTest(800);
@@ -143,9 +144,9 @@ public class Assemble {
     private static boolean isValidMenuItem(int makingStep, int selectMenuNumber) {
         if (!isValidRange(makingStep, selectMenuNumber)) {
             delayRunTest(800);
-            return true;
+            return false;
         }
-        return false;
+        return true;
     }
 
     private static boolean isValidRange(int makingStep, int selected) {
