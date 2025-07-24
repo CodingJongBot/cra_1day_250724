@@ -1,6 +1,4 @@
-package mission2.car;
-
-import mission2.CarAssembleProcess;
+package mission2;
 
 public class Main {
 
